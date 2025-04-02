@@ -1,0 +1,192 @@
+@model OrderAutomation.Models.Order
+
+@{
+    ViewData["Title"] = "Редактирование заказа";
+}
+
+<h1>Редактирование заказа @Model.OrderNumber</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">Продукты в заказе</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Наименование</th>
+                                <th>Артикул</th>
+                                <th>Цена</th>
+                                <th>Кол-во</th>
+                                <th>Сумма</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderItems != null && Model.OrderItems.Any())
+                            {
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@item.Product?.Name</td>
+                                        <td>@item.Product?.SKU</td>
+                                        <td>@item.UnitPrice.ToString("F2", new System.Globalization.CultureInfo("en-US"))</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@((item.Quantity * item.UnitPrice).ToString("F2", new System.Globalization.CultureInfo("en-US")))</td>
+                                        <td>
+                                            <form asp-action="RemoveOrderItem" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Вы действительно хотите удалить этот товар из заказа?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                                <tr class="bg-light">
+                                    <td colspan="3" class="text-end">
+                                        <strong>Всего товаров: @Model.OrderItems.Count</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>@Model.OrderItems.Sum(i => i.Quantity)</strong>
+                                    </td>
+                                    <td class="text-end" colspan="2">
+                                        <strong>@Model.TotalAmount.ToString("F2", new System.Globalization.CultureInfo("en-US"))</strong>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center">Нет продуктов в заказе</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="alert alert-info mb-0">
+                    <h4 class="mb-0">Итого: @Model.TotalAmount.ToString("F2", new System.Globalization.CultureInfo("en-US"))</h4>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">Добавить продукт в заказ</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddOrderItem" method="post">
+                    <input type="hidden" name="orderId" value="@Model.Id" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="control-label">Продукт</label>
+                                <select name="productId" class="form-select" asp-items="ViewBag.Products" required></select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="control-label">Количество</label>
+                                <input type="number" name="quantity" class="form-control" min="1" value="1" required />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group mb-3" style="margin-top: 32px;">
+                                <input type="submit" value="Добавить" class="btn btn-primary w-100" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Информация о заказе</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="TotalAmount" />
+                    <div class="form-group mb-3">
+                        <label asp-for="OrderNumber" class="control-label"></label>
+                        <input asp-for="OrderNumber" class="form-control" readonly />
+                        <span asp-validation-for="OrderNumber" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="CustomerId" class="control-label"></label>
+                        <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.CustomerId"></select>
+                        <span asp-validation-for="CustomerId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="CreatedDate" class="control-label"></label>
+                        <input asp-for="CreatedDate" class="form-control" />
+                        <span asp-validation-for="CreatedDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Status" class="control-label"></label>
+                        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<OrderStatus>()"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="CompletedDate" class="control-label"></label>
+                        <input asp-for="CompletedDate" class="form-control" />
+                        <span asp-validation-for="CompletedDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Notes" class="control-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <input type="submit" value="Сохранить" class="btn btn-primary" />
+                        <a asp-action="Index" class="btn btn-outline-secondary">Вернуться к списку</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            $('select[name="productId"]').change(function() {
+                var productId = $(this).val();
+                if (productId) {
+                    $.getJSON('/Orders/GetProductInfo/' + productId, function(data) {
+                        var infoHtml = `
+                            <div class="alert alert-info mt-3 product-info">
+                                <strong>${data.name}</strong> (${data.sku})<br>
+                                Цена: ${data.price.toFixed(2)} руб.<br>
+                                Доступно на складе: <strong>${data.stock}</strong> шт.
+                            </div>
+                        `;                       
+                        $('.product-info').remove();
+                        
+                        $('form[asp-action="AddOrderItem"]').after(infoHtml);                     
+                        $('input[name="quantity"]').attr('max', data.stock);
+                        
+                        if (data.stock <= 0) {
+                            $('input[type="submit"]').prop('disabled', true);
+                            $('.product-info').addClass('alert-danger').removeClass('alert-info');
+                        } else {
+                            $('input[type="submit"]').prop('disabled', false);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+} 

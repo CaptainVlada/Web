@@ -1,0 +1,164 @@
+@model IEnumerable<OrderAutomation.Models.Order>
+
+@{
+    ViewData["Title"] = "Заказы";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Список заказов</h1>
+    <div>
+        <a asp-action="ExportToCsv" asp-route-statusFilter="@ViewData["CurrentStatusFilter"]" class="btn btn-outline-primary me-2" title="Экспорт в CSV">
+            <i class="bi bi-file-earmark-excel"></i> Экспорт в CSV
+        </a>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Создать новый заказ
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Новые</h5>
+                <h2 class="card-text">@ViewData["NewOrdersCount"]</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">В обработке</h5>
+                <h2 class="card-text">@ViewData["ProcessingOrdersCount"]</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Завершено</h5>
+                <h2 class="card-text">@ViewData["CompletedOrdersCount"]</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Отменено</h5>
+                <h2 class="card-text">@ViewData["CanceledOrdersCount"]</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md">
+        <div class="card text-white bg-dark">
+            <div class="card-body">
+                <h5 class="card-title">Всего</h5>
+                <h2 class="card-text">@ViewData["TotalOrdersCount"]</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">Фильтры</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Поиск</label>
+                <div class="input-group">
+                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="№ заказа или клиент" />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Статус</label>
+                <select name="statusFilter" class="form-select">
+                    <option value="">Все статусы</option>
+                    @foreach (OrderStatus status in Enum.GetValues(typeof(OrderStatus)))
+                    {
+                        if (ViewData["CurrentStatusFilter"]?.ToString() == status.ToString())
+                        {
+                            <option value="@status" selected>@status</option>
+                        }
+                        else
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Дата с</label>
+                <input type="date" name="dateFrom" value="@ViewData["CurrentDateFrom"]" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Дата по</label>
+                <input type="date" name="dateTo" value="@ViewData["CurrentDateTo"]" class="form-control" />
+            </div>
+            
+            <div class="col-12 mt-3">
+                <button type="submit" class="btn btn-primary">Применить фильтры</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>@Html.DisplayNameFor(model => model.OrderNumber)</th>
+                        <th>@Html.DisplayNameFor(model => model.Customer)</th>
+                        <th>@Html.DisplayNameFor(model => model.CreatedDate)</th>
+                        <th>@Html.DisplayNameFor(model => model.Status)</th>
+                        <th>@Html.DisplayNameFor(model => model.TotalAmount)</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model) {
+                        <tr>
+                            <td>@Html.DisplayFor(modelItem => item.OrderNumber)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Customer.CompanyName)</td>
+                            <td>@item.CreatedDate.ToShortDateString()</td>
+                            <td>
+                                @{
+                                    string badgeClass = item.Status switch
+                                    {
+                                        OrderStatus.New => "bg-info",
+                                        OrderStatus.Processing => "bg-warning",
+                                        OrderStatus.Completed => "bg-success",
+                                        OrderStatus.Canceled => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@item.Status</span>
+                            </td>
+                            <td>@item.TotalAmount.ToString("C")</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Редактировать">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info me-1" title="Просмотр">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Удалить">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> 

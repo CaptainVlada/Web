@@ -1,0 +1,113 @@
+@model OrderAutomation.Models.Product
+
+@{
+    ViewData["Title"] = "Создание продукта";
+}
+
+<h1>Добавление нового продукта</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" id="productName" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="SKU" class="control-label"></label>
+                <div class="input-group">
+                    <input asp-for="SKU" class="form-control" id="productSKU" />
+                    <button type="button" class="btn btn-outline-secondary" id="generateSKU">Сгенерировать</button>
+                </div>
+                <span asp-validation-for="SKU" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Price" class="control-label"></label>
+                        <input asp-for="Price" class="form-control" step="0.01" min="0.01" />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="StockQuantity" class="control-label"></label>
+                        <input asp-for="StockQuantity" class="form-control" />
+                        <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="CategoryId" class="control-label"></label>
+                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId" id="productCategory">
+                    <option value="">-- Выберите категорию --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <input type="submit" value="Создать" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-outline-secondary">Вернуться к списку</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            $('#generateSKU').click(function() {
+                var productName = $('#productName').val();
+                var categoryId = $('#productCategory').val();
+                var category = $('#productCategory option:selected').text();
+                
+                if (!productName) {
+                    alert('Пожалуйста, сначала введите название продукта');
+                    return;
+                }
+                
+                var prefix = category.substring(0, 2).toUpperCase();               
+                var namePart = '';
+                var words = productName.split(' ');
+                if (words.length > 1) {
+                    for (var i = 0; i < Math.min(3, words.length); i++) {
+                        if (words[i][0]) {
+                            namePart += words[i][0];
+                        }
+                    }
+                } else {
+                    namePart = productName.substring(0, 3);
+                }
+                
+                namePart = transliterate(namePart.toUpperCase());               
+                var randomNum = Math.floor(1000 + Math.random() * 9000);                
+                var sku = prefix + '-' + namePart + '-' + randomNum;
+                
+                $('#productSKU').val(sku);
+            });
+            
+            function transliterate(text) {
+                var rusToEng = {
+                    'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
+                    'Ж': 'ZH', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+                    'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+                    'Ф': 'F', 'Х': 'KH', 'Ц': 'TS', 'Ч': 'CH', 'Ш': 'SH', 'Щ': 'SCH', 'Ъ': '',
+                    'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'YU', 'Я': 'YA'
+                };
+                
+                return text.split('').map(function(char) {
+                    return rusToEng[char] || char;
+                }).join('');
+            }
+        });
+    </script>
+} 

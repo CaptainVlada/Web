@@ -1,0 +1,123 @@
+@model OrderAutomation.Models.Order
+@{
+    Layout = "_PrintLayout";
+    ViewData["Title"] = "Накладная";
+}
+
+<div class="container mt-4 p-4 border">
+    <div class="text-center mb-4">
+        <h1 class="mb-0">ООО "Мартин Урал"</h1>
+        <p>г. Екатеринбург, ул. Малышева, 51</p>
+        <div class="row align-items-center">
+            <div class="col-md-10">
+                <h2>НАКЛАДНАЯ №@Model.OrderNumber</h2>
+                <p>от @Model.CreatedDate.ToString("dd.MM.yyyy")</p>
+            </div>
+            <div class="col-md-2">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Order:@Model.OrderNumber" 
+                     alt="QR-код заказа" class="img-thumbnail" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Поставщик</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>ООО "Мартин Урал"</strong></p>
+                    <p>ИНН: 6670000000</p>
+                    <p>г. Екатеринбург, ул. Малышева, 51</p>
+                    <p>Тел: +7 (343) 000-00-00</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Покупатель</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>@Model.Customer?.CompanyName</strong></p>
+                    <p>ИНН: не указан</p>
+                    <p>@(string.IsNullOrEmpty(Model.Customer?.Address) ? "Адрес не указан" : Model.Customer?.Address)</p>
+                    <p>Контактное лицо: @Model.Customer?.ContactName</p>
+                    <p>Тел: @Model.Customer?.Phone</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th scope="col" class="text-center">№</th>
+                <th scope="col">Наименование</th>
+                <th scope="col">Артикул</th>
+                <th scope="col">Категория</th>
+                <th scope="col" class="text-center">Кол-во</th>
+                <th scope="col" class="text-end">Цена, руб.</th>
+                <th scope="col" class="text-end">Сумма, руб.</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.OrderItems != null && Model.OrderItems.Any())
+            {
+                int index = 1;
+                foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td class="text-center">@index</td>
+                        <td>@item.Product?.Name</td>
+                        <td>@item.Product?.SKU</td>
+                        <td>@(item.Product?.Category?.Name ?? "-")</td>
+                        <td class="text-center">@item.Quantity</td>
+                        <td class="text-end">@item.UnitPrice.ToString("N2")</td>
+                        <td class="text-end">@((item.Quantity * item.UnitPrice).ToString("N2"))</td>
+                    </tr>
+                    index++;
+                }
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="6" class="text-end">Итого:</th>
+                <th class="text-end">@Model.TotalAmount.ToString("N2")</th>
+            </tr>
+            <tr>
+                <td colspan="7" class="text-start">
+                    <em>Всего наименований: @(Model.OrderItems?.Count ?? 0), на сумму: @Model.TotalAmount.ToString("N2") руб.</em>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <p><strong>Отпустил</strong> ____________________ / ____________________</p>
+            <p class="small text-muted">(подпись)                        (расшифровка)</p>
+            <p class="mt-3">М.П.</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <p><strong>Получил</strong> ____________________ / ____________________</p>
+            <p class="small text-muted">(подпись)                        (расшифровка)</p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 text-center small text-muted">
+            <p>Документ создан в системе автоматизации заказов ООО "Мартин Урал"</p>
+            <p>Дата формирования: @DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            window.print();
+        });
+    </script>
+} 

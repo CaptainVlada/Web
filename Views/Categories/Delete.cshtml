@@ -1,0 +1,42 @@
+@model OrderAutomation.Models.Category
+
+@{
+    ViewData["Title"] = "Удаление категории";
+}
+
+<h1>Удаление категории</h1>
+
+<h3>Вы уверены, что хотите удалить эту категорию?</h3>
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+    </dl>
+    
+    @if (Model.Products != null && Model.Products.Any())
+    {
+        <div class="alert alert-warning mt-3">
+            <h5>Внимание!</h5>
+            <p>В этой категории содержится @Model.Products.Count продуктов. При удалении категории эти продукты будут перемещены в категорию "Без категории".</p>
+        </div>
+    }
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Удалить" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-outline-secondary">Вернуться к списку</a>
+    </form>
+</div> 

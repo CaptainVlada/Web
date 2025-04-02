@@ -1,0 +1,84 @@
+@model OrderAutomation.Models.Supplier
+
+@{
+    ViewData["Title"] = "Детали поставщика";
+}
+
+<h1>Детали поставщика</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.ContactPerson)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.ContactPerson)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Phone)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Phone)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Address)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Address)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Notes)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Notes)
+        </dd>
+    </dl>
+</div>
+
+@if (Model.ProductReceipts != null && Model.ProductReceipts.Any())
+{
+    <div class="mt-4">
+        <h4>История поставок от этого поставщика</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Товар</th>
+                    <th>Количество</th>
+                    <th>Накладная</th>
+                    <th>Цена</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var receipt in Model.ProductReceipts)
+                {
+                    <tr>
+                        <td>@receipt.ReceiptDate.ToShortDateString()</td>
+                        <td>@receipt.Product?.Name</td>
+                        <td>@receipt.Quantity</td>
+                        <td>@receipt.InvoiceNumber</td>
+                        <td>@Html.DisplayFor(modelItem => receipt.PurchasePrice)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редактировать</a>
+    <a asp-action="Index" class="btn btn-outline-secondary">Вернуться к списку</a>
+</div> 

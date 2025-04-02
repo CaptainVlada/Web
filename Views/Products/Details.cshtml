@@ -1,0 +1,88 @@
+@model OrderAutomation.Models.Product
+
+@{
+    ViewData["Title"] = "Детали продукта";
+}
+
+<h1>Информация о продукте</h1>
+
+<div>
+    <hr />
+    <div class="row">
+        <div class="col-md-8">
+            <dl class="row">
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Name)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Name)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.SKU)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.SKU)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Description)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Description)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Price)
+                </dt>
+                <dd class="col-sm-9">
+                    @Model.Price.ToString("F2", new System.Globalization.CultureInfo("en-US"))
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.StockQuantity)
+                </dt>
+                <dd class="col-sm-9 @(Model.StockQuantity < 10 ? "text-danger" : "")">
+                    @Html.DisplayFor(model => model.StockQuantity)
+                </dd>
+                <dt class="col-sm-3">
+                    Категория
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Category.Name)
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редактировать</a>
+    <a asp-action="Index" class="btn btn-outline-secondary">Вернуться к списку</a>
+    <a asp-controller="ProductReceipts" asp-action="Create" asp-route-productId="@Model.Id" class="btn btn-success">Добавить поступление</a>
+</div>
+
+@if (Model.ProductReceipts != null && Model.ProductReceipts.Any())
+{
+    <div class="mt-4">
+        <h4>История поступлений</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Количество</th>
+                    <th>Поставщик</th>
+                    <th>Закупочная цена</th>
+                    <th>Номер накладной</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var receipt in Model.ProductReceipts.OrderByDescending(r => r.ReceiptDate))
+                {
+                    <tr>
+                        <td>@receipt.ReceiptDate.ToShortDateString()</td>
+                        <td>@receipt.Quantity</td>
+                        <td>@receipt.Supplier</td>
+                        <td>@(receipt.PurchasePrice?.ToString("F2", new System.Globalization.CultureInfo("en-US")) ?? "-")</td>
+                        <td>@receipt.InvoiceNumber</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+} 

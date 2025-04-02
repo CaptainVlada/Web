@@ -1,0 +1,125 @@
+@model OrderAutomation.Models.Customer
+
+@{
+    ViewData["Title"] = "Детали клиента";
+}
+
+<h1>Информация о клиенте</h1>
+
+<div>
+    <hr />
+    <div class="row">
+        <div class="col-md-8">
+            <dl class="row">
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.CompanyName)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.CompanyName)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.ContactName)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.ContactName)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Position)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Position)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Phone)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Phone)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Email)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Email)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.Address)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Address)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.INN)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.INN)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.KPP)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.KPP)
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+        <i class="bi bi-pencil"></i> Редактировать
+    </a>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Вернуться к списку
+    </a>
+    
+    <form asp-action="CreateOrder" asp-route-id="@Model.Id" method="post" class="d-inline">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Создать новый заказ
+        </button>
+    </form>
+</div>
+
+@if (Model.Orders != null && Model.Orders.Any())
+{
+    <div class="mt-4">
+        <h4>История заказов</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Номер заказа</th>
+                    <th>Дата</th>
+                    <th>Статус</th>
+                    <th>Сумма</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Orders.OrderByDescending(o => o.CreatedDate))
+                {
+                    <tr>
+                        <td>@order.OrderNumber</td>
+                        <td>@order.CreatedDate.ToShortDateString()</td>
+                        <td>
+                            @{
+                                string badgeClass = order.Status switch
+                                {
+                                    OrderStatus.New => "bg-info",
+                                    OrderStatus.Processing => "bg-warning",
+                                    OrderStatus.Completed => "bg-success",
+                                    OrderStatus.Canceled => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <span class="badge @badgeClass">@order.Status</span>
+                        </td>
+                        <td>@order.TotalAmount.ToString("C")</td>
+                        <td>
+                            <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
+                                Детали
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+} 

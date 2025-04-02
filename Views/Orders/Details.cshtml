@@ -1,0 +1,154 @@
+@model OrderAutomation.Models.Order
+
+@{
+    ViewData["Title"] = "Детали заказа";
+}
+
+<h1>Заказ №@Model.OrderNumber</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Информация о заказе</h5>
+                <div>
+                    @{
+                        string badgeClass = Model.Status switch
+                        {
+                            OrderStatus.New => "bg-info",
+                            OrderStatus.Processing => "bg-warning",
+                            OrderStatus.Completed => "bg-success",
+                            OrderStatus.Canceled => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                    }
+                    <span class="badge @badgeClass fs-6">@Model.Status</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.OrderNumber)</dt>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.OrderNumber)</dd>
+                            
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Customer)</dt>
+                            <dd class="col-sm-8">
+                                <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.CustomerId">
+                                    @Html.DisplayFor(model => model.Customer.CompanyName)
+                                </a>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Контактное лицо</dt>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.Customer.ContactName)</dd>
+                            
+                            <dt class="col-sm-4">Телефон</dt>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.Customer.Phone)</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+                            <dd class="col-sm-8">@Model.CreatedDate.ToShortDateString()</dd>
+                            
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CompletedDate)</dt>
+                            <dd class="col-sm-8">
+                                @(Model.CompletedDate.HasValue ? Model.CompletedDate.Value.ToShortDateString() : "-")
+                            </dd>
+                            
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Notes)</dt>
+                            <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Notes) ? "-" : Model.Notes)</dd>
+                            
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.TotalAmount)</dt>
+                            <dd class="col-sm-8"><strong>@Model.TotalAmount.ToString("F2", new System.Globalization.CultureInfo("en-US"))</strong></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="btn-group" role="group">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-1">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary me-1">
+                        <i class="bi bi-arrow-left"></i> Вернуться к списку
+                    </a>
+                    <a asp-action="PrintInvoice" asp-route-id="@Model.Id" class="btn btn-info me-1" target="_blank">
+                        <i class="bi bi-printer"></i> Печать накладной
+                    </a>
+                    
+                    <form asp-action="Repeat" asp-route-id="@Model.Id" method="post" class="d-inline me-1" onsubmit="return confirm('Вы уверены, что хотите создать новый заказ на основе текущего?');">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-copy"></i> Повторить заказ
+                        </button>
+                    </form>
+                    
+                    @if (Model.Status != OrderStatus.Canceled && Model.Status != OrderStatus.Completed)
+                    {
+                        <form asp-action="Complete" asp-route-id="@Model.Id" method="post" class="d-inline me-1" onsubmit="return confirm('Вы уверены, что хотите завершить заказ? После этого его нельзя будет изменить.');">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Завершить заказ
+                            </button>
+                        </form>
+                        
+                        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Вы уверены, что хотите отменить заказ? Товары будут возвращены на склад.');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> Отменить заказ
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">Продукты в заказе</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Наименование</th>
+                            <th>Артикул</th>
+                            <th>Категория</th>
+                            <th>Цена</th>
+                            <th>Количество</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.OrderItems != null && Model.OrderItems.Any())
+                        {
+                            @foreach (var item in Model.OrderItems)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId">
+                                            @item.Product?.Name
+                                        </a>
+                                    </td>
+                                    <td>@item.Product?.SKU</td>
+                                    <td>@item.Product?.Category?.Name</td>
+                                    <td>@item.UnitPrice.ToString("F2", new System.Globalization.CultureInfo("en-US"))</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@item.TotalPrice.ToString("F2", new System.Globalization.CultureInfo("en-US"))</td>
+                                </tr>
+                            }
+                            <tr class="table-secondary">
+                                <td colspan="5" class="text-end"><strong>Итого:</strong></td>
+                                <td><strong>@Model.TotalAmount.ToString("F2", new System.Globalization.CultureInfo("en-US"))</strong></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center">Нет продуктов в заказе</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> 
