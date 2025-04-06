@@ -1,25 +1,38 @@
-# Use Microsoft's .NET 8.0 SDK image
+# ---------------------
+# Базовый образ для сборки (с SDK и инструментами)
+# ---------------------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+# Установка зависимостей (если нужны пакеты Linux)
+# RUN apt-get update && apt-get install -y <ваши-пакеты>
 
-# Set up the app environment
+# Создаем рабочую директорию
+WORKDIR /src
 
-WORKDIR /app
+# Копируем файлы проекта
+COPY . .
 
-# Copy everything and build
+# Восстанавливаем пакеты и собираем проект
+RUN dotnet restore "Web.csproj"
+RUN dotnet build "Web.csproj" --configuration Release --no-restore
 
-COPY . ./
+# ---------------------
+# Финальный образ (только runtime)
+# ---------------------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
-RUN dotnet publish -c Release -o out
+# Копируем настройки безопасности и языка
+COPY --from=build /src/appsettings.* ./
+COPY --from=build /src/Web.deps.json ./
+COPY --from=build /src/Web.dll ./
+COPY --from=build /src/Web.pdb ./
+COPY --from=build /src/wwwroot ./wwwroot
 
-# Runtime image
+# Устанавливаем рабочую директорию
+WORKDIR /
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Запуск приложения
+ENTRYPOINT ["dotnet", "Web.dll"]
 
-WORKDIR /app
-
-COPY --from=build-env /app/out .
-
-# Start the app
-
-ENTRYPOINT ["dotnet", "YourApp.dll"]
+# Опционально: разрешение HTTPS сертификата (если нужно)
+# RUN dotnet dev-certs https -ep /https.crt && dotnet dev-certs https --trust
