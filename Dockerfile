@@ -13,7 +13,10 @@ COPY . .
 RUN dotnet restore "OrderAutomation.csproj"
 RUN dotnet build "OrderAutomation.csproj" --configuration Release --no-restore
 
-# Публикуем проект (важно!)
+# Выполняем миграции (важно!)
+RUN dotnet ef database update --project OrderAutomation.csproj --startup-project OrderAutomation.csproj
+
+# Публикуем проект
 RUN dotnet publish "OrderAutomation.csproj" --configuration Release --output out --no-build
 
 # ---------------------
