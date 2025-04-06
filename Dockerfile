@@ -34,5 +34,3 @@ WORKDIR /
 # Запуск приложения
 ENTRYPOINT ["dotnet", "OrderAutomation.dll"]
 
-# Опционально: разрешение HTTPS сертификата (если нужно)
-RUN dotnet dev-certs https -ep /https.crt && dotnet dev-certs https --trust
