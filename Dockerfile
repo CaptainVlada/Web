@@ -13,8 +13,8 @@ WORKDIR /src
 COPY . .
 
 # Восстанавливаем пакеты и собираем проект
-RUN dotnet restore "Web.csproj"
-RUN dotnet build "Web.csproj" --configuration Release --no-restore
+RUN dotnet restore "OrderAutomation.csproj"
+RUN dotnet build "OrderAutomation.csproj" --configuration Release --no-restore
 
 # ---------------------
 # Финальный образ (только runtime)
@@ -32,7 +32,7 @@ COPY --from=build /src/wwwroot ./wwwroot
 WORKDIR /
 
 # Запуск приложения
-ENTRYPOINT ["dotnet", "Web.dll"]
+ENTRYPOINT ["dotnet", "OrderAutomation.dll"]
 
 # Опционально: разрешение HTTPS сертификата (если нужно)
 # RUN dotnet dev-certs https -ep /https.crt && dotnet dev-certs https --trust
