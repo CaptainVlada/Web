@@ -23,9 +23,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
 # Копируем настройки безопасности и языка
 COPY --from=build /src/appsettings.* ./
-COPY --from=build /src/Web.deps.json ./
-COPY --from=build /src/Web.dll ./
-COPY --from=build /src/Web.pdb ./
+COPY --from=build /src/OrderAutomation.deps.json ./
+COPY --from=build /src/OrderAutomation.dll ./
+COPY --from=build /src/OrderAutomation.pdb ./
 COPY --from=build /src/wwwroot ./wwwroot
 
 # Устанавливаем рабочую директорию
@@ -35,4 +35,4 @@ WORKDIR /
 ENTRYPOINT ["dotnet", "OrderAutomation.dll"]
 
 # Опционально: разрешение HTTPS сертификата (если нужно)
-# RUN dotnet dev-certs https -ep /https.crt && dotnet dev-certs https --trust
+RUN dotnet dev-certs https -ep /https.crt && dotnet dev-certs https --trust
