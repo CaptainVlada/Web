@@ -3,9 +3,6 @@
 # ---------------------
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
-# Установка зависимостей (если нужны пакеты Linux)
-# RUN apt-get update && apt-get install -y <ваши-пакеты>
-
 # Создаем рабочую директорию
 WORKDIR /src
 
@@ -16,16 +13,19 @@ COPY . .
 RUN dotnet restore "OrderAutomation.csproj"
 RUN dotnet build "OrderAutomation.csproj" --configuration Release --no-restore
 
+# Добавляем публикацию (важно!)
+RUN dotnet publish "OrderAutomation.csproj" --configuration Release --output out --no-build
+
 # ---------------------
 # Финальный образ (только runtime)
 # ---------------------
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
-# Копируем настройки безопасности и языка
-COPY --from=build /src/appsettings.* ./
-COPY --from=build /src/OrderAutomation.deps.json ./
-COPY --from=build /src/OrderAutomation.dll ./
-COPY --from=build /src/OrderAutomation.pdb ./
+# Копируем опубликованные файлы
+COPY --from=build /src/out/appsettings.* ./
+COPY --from=build /src/out/OrderAutomation.deps.json ./
+COPY --from=build /src/out/OrderAutomation.dll ./
+COPY --from=build /src/out/OrderAutomation.pdb ./
 COPY --from=build /src/wwwroot ./wwwroot
 
 # Устанавливаем рабочую директорию
