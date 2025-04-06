@@ -13,7 +13,7 @@ COPY . .
 RUN dotnet restore "OrderAutomation.csproj"
 RUN dotnet build "OrderAutomation.csproj" --configuration Release --no-restore
 
-# Добавляем публикацию (важно!)
+# Публикуем проект (важно!)
 RUN dotnet publish "OrderAutomation.csproj" --configuration Release --output out --no-build
 
 # ---------------------
@@ -21,16 +21,11 @@ RUN dotnet publish "OrderAutomation.csproj" --configuration Release --output out
 # ---------------------
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
-# Копируем опубликованные файлы
-COPY --from=build /src/out/appsettings.* ./
-COPY --from=build /src/out/OrderAutomation.deps.json ./
-COPY --from=build /src/out/OrderAutomation.dll ./
-COPY --from=build /src/out/OrderAutomation.pdb ./
-COPY --from=build /src/wwwroot ./wwwroot
+# Копируем все выходные файлы из папки 'out'
+COPY --from=build /src/out/ ./
 
 # Устанавливаем рабочую директорию
 WORKDIR /
 
 # Запуск приложения
 ENTRYPOINT ["dotnet", "OrderAutomation.dll"]
-
