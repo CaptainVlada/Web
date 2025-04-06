@@ -9,11 +9,15 @@ WORKDIR /src
 # Копируем файлы проекта
 COPY . .
 
+# Установка EF Core Tools (если не установлены через проект)
+RUN dotnet tool install --global dotnet-ef && \
+    export PATH="$PATH:/root/.dotnet/tools"
+
 # Восстанавливаем пакеты и собираем проект
 RUN dotnet restore "OrderAutomation.csproj"
 RUN dotnet build "OrderAutomation.csproj" --configuration Release --no-restore
 
-# Выполняем миграции (важно!)
+# Выполняем миграции
 RUN dotnet ef database update --project OrderAutomation.csproj --startup-project OrderAutomation.csproj
 
 # Публикуем проект
